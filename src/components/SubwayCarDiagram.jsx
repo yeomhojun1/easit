@@ -2,16 +2,6 @@ import { C, probColor } from '../constants'
 
 const ZONE_SEATS = { A: 5, B: 6, C: 5 }
 
-function Seat({ color }) {
-  return (
-    <div style={{
-      width: 18, height: 15, borderRadius: 3, flexShrink: 0,
-      background: color + '33',
-      border: `1px solid ${color}66`,
-    }} />
-  )
-}
-
 function Door({ number }) {
   return (
     <div style={{ width: 28, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0' }}>
@@ -34,27 +24,22 @@ function ZoneSection({ zoneKey, zoneData, selected, onSelect }) {
 
   return (
     <div onClick={() => onSelect(zoneKey)} style={{
-      flex: seatCount, display: 'flex', flexDirection: 'column',
-      background: isSelected ? color + '18' : 'transparent',
-      borderRadius: 8, cursor: 'pointer',
-      border: `2px solid ${isSelected ? color : 'transparent'}`,
-      transition: 'all 0.2s', overflow: 'hidden',
+      flex: seatCount,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: isSelected ? color + '22' : color + '0D',
+      borderRadius: 8,
+      cursor: 'pointer',
+      border: `2px solid ${isSelected ? color : color + '44'}`,
+      transition: 'all 0.2s',
+      margin: '6px 3px',
+      gap: 4,
     }}>
-      <div style={{ display: 'flex', gap: 3, padding: '6px 4px 4px', justifyContent: 'center' }}>
-        {Array.from({ length: seatCount }, (_, i) => (
-          <Seat key={i} color={color} />
-        ))}
-      </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '2px 0' }}>
-        <div style={{ fontSize: 15, fontWeight: 900, color, lineHeight: 1 }}>존 {zoneKey}</div>
-        <div style={{ fontSize: 14, fontWeight: 800, color: C.text, marginTop: 2 }}>{prob}%</div>
-        {isSelected && <div style={{ width: 20, height: 2, background: color, borderRadius: 1, marginTop: 3 }} />}
-      </div>
-      <div style={{ display: 'flex', gap: 3, padding: '4px 4px 6px', justifyContent: 'center' }}>
-        {Array.from({ length: seatCount }, (_, i) => (
-          <Seat key={i} color={color} />
-        ))}
-      </div>
+      <div style={{ fontSize: 15, fontWeight: 900, color, lineHeight: 1 }}>존 {zoneKey}</div>
+      <div style={{ fontSize: 18, fontWeight: 900, color: C.text }}>{prob}%</div>
+      {isSelected && <div style={{ width: 20, height: 2, borderRadius: 1, background: color }} />}
     </div>
   )
 }
@@ -70,46 +55,39 @@ function PremiumZoneSection({ zone1Key, zone2Key, zoneData, selected, onSelect }
   const isSel2 = selected === zone2Key
 
   return (
-    <div style={{ flex: 5, display: 'flex', flexDirection: 'column' }}>
-      {/* 위쪽 서브존 (A1) */}
+    <div style={{ flex: 5, display: 'flex', flexDirection: 'column', margin: '6px 3px', gap: 3 }}>
+      {/* 위 블록 */}
       <div onClick={() => onSelect(zone1Key)} style={{
-        flex: 1, display: 'flex', flexDirection: 'row',
-        alignItems: 'center', justifyContent: 'center', gap: 4,
-        background: isSel1 ? color1 + '18' : 'transparent',
-        borderLeft: `2px solid ${isSel1 ? color1 : 'transparent'}`,
-        borderRight: `2px solid ${isSel1 ? color1 : 'transparent'}`,
-        borderTop: `2px solid ${isSel1 ? color1 : 'transparent'}`,
-        cursor: 'pointer', transition: 'all 0.2s',
-        padding: '4px 6px',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: isSel1 ? color1 + '22' : color1 + '0D',
+        border: `2px solid ${isSel1 ? color1 : color1 + '44'}`,
+        borderRadius: 6,
+        cursor: 'pointer',
+        transition: 'all 0.2s',
       }}>
-        {[0, 1, 2].map(i => <Seat key={i} color={color1} />)}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 4 }}>
-          <div style={{ fontSize: 11, fontWeight: 900, color: color1, lineHeight: 1 }}>{z1?.label}</div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.text }}>{prob1}%</div>
-        </div>
-        {[0, 1, 2].map(i => <Seat key={i} color={color1} />)}
+        <div style={{ fontSize: 11, fontWeight: 900, color: color1 }}>{z1?.label}</div>
+        <div style={{ fontSize: 13, fontWeight: 900, color: C.text }}>{prob1}%</div>
       </div>
 
-      {/* 가로 구분선 */}
-      <div style={{ height: 1, background: C.border, flexShrink: 0 }} />
-
-      {/* 아래쪽 서브존 (A2) */}
+      {/* 아래 블록 */}
       <div onClick={() => onSelect(zone2Key)} style={{
-        flex: 1, display: 'flex', flexDirection: 'row',
-        alignItems: 'center', justifyContent: 'center', gap: 4,
-        background: isSel2 ? color2 + '18' : 'transparent',
-        borderLeft: `2px solid ${isSel2 ? color2 : 'transparent'}`,
-        borderRight: `2px solid ${isSel2 ? color2 : 'transparent'}`,
-        borderBottom: `2px solid ${isSel2 ? color2 : 'transparent'}`,
-        cursor: 'pointer', transition: 'all 0.2s',
-        padding: '4px 6px',
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: isSel2 ? color2 + '22' : color2 + '0D',
+        border: `2px solid ${isSel2 ? color2 : color2 + '44'}`,
+        borderRadius: 6,
+        cursor: 'pointer',
+        transition: 'all 0.2s',
       }}>
-        {[0, 1, 2].map(i => <Seat key={i} color={color2} />)}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 4 }}>
-          <div style={{ fontSize: 11, fontWeight: 900, color: color2, lineHeight: 1 }}>{z2?.label}</div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.text }}>{prob2}%</div>
-        </div>
-        {[0, 1, 2].map(i => <Seat key={i} color={color2} />)}
+        <div style={{ fontSize: 11, fontWeight: 900, color: color2 }}>{z2?.label}</div>
+        <div style={{ fontSize: 13, fontWeight: 900, color: C.text }}>{prob2}%</div>
       </div>
     </div>
   )
