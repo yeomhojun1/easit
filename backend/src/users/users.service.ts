@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, ConflictException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { User } from './user.entity'
@@ -23,7 +23,14 @@ export class UsersService {
   async createEmailUser(dto: { name: string; email: string; password: string; phone: string; birthDate: string; gender: string }) {
     const hashed = await bcrypt.hash(dto.password, 10)
     const user = this.repo.create({ ...dto, password: hashed, provider: 'email' })
-    return this.repo.save(user)
+    try {
+      return await this.repo.save(user)
+    } catch (err: any) {
+      if (err?.code === '23505') {
+        throw new ConflictException('이미 사용 중인 이메일입니다.')
+      }
+      throw err
+    }
   }
 
   async createOAuthUser(dto: { name: string; email: string; provider: string; providerId: string }) {
