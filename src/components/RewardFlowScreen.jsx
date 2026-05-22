@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { C, st, ZONES_3 } from '../constants'
+import { C, st, ZONES_6 } from '../constants'
 import SubwayCarDiagram from './SubwayCarDiagram'
 
 const REWARD_STEPS = ['착석 확인', '존 선택', '하차역 입력', '포인트 적립']
@@ -37,8 +37,8 @@ function ConfirmStep({ onConfirm, onCancel }) {
 function ZoneSelectStep({ zone, setZone, onNext }) {
   return (
     <div>
-      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 18 }}>어느 존에 앉으셨나요?</div>
-      <SubwayCarDiagram zoneData={ZONES_3} selected={zone} onSelect={setZone} />
+      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 18 }}>어느 라인에 앉으셨나요?</div>
+      <SubwayCarDiagram zoneData={ZONES_6} selected={zone} onSelect={setZone} isPremium={true} />
       <button onClick={() => zone && onNext()}
         style={{ ...st.btn, background: zone ? C.gradPurple : C.border, color: '#fff', marginTop: 20, opacity: zone ? 1 : 0.5 }}>
         다음

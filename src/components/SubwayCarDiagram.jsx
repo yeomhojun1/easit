@@ -16,7 +16,7 @@ function Door({ number, slim = false }) {
         background: C.border + '44',
         position: 'relative',
       }}>
-        <div style={{ fontSize: 8, color: C.muted, fontWeight: 700, writingMode: 'vertical-rl' }}>
+        <div style={{ fontSize: 8, color: C.muted, fontWeight: 700 }}>
           {number}
         </div>
       </div>
