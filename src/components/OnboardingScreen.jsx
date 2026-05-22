@@ -17,6 +17,10 @@ export default function OnboardingScreen({ navigate }) {
           style={{ ...st.btn, background: '#FEE500', color: '#191919', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
           <span style={{ fontSize: 22 }}>💬</span> 카카오로 시작하기
         </button>
+        <button onClick={() => { window.location.href = `${API_URL}/auth/naver` }}
+          style={{ ...st.btn, background: '#03C75A', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+          <span style={{ fontWeight: 900, fontSize: 20 }}>N</span> 네이버로 시작하기
+        </button>
 <button onClick={() => { window.location.href = `${API_URL}/auth/google` }}
           style={{ ...st.btn, background: '#fff', color: '#191919', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
           <span style={{ fontSize: 20 }}>G</span> Google로 시작하기
