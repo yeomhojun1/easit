@@ -47,20 +47,43 @@ function ZoneSelectStep({ zone, setZone, onNext }) {
   )
 }
 
-function DestinationStep({ dest, setDest, onSubmit }) {
+function DestinationStep({ dest, setDest, onSubmit, stations }) {
   return (
     <div>
-      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 18 }}>어느 역에서 내리실 건가요?</div>
-      <div style={{ ...{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 16 }, marginBottom: 24 }}>
-        <input
-          placeholder="하차역 입력 (예: 강남)"
+      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 18 }}>
+        어느 역에서 내리실 건가요?
+      </div>
+      <div style={{ marginBottom: 24 }}>
+        <select
           value={dest}
           onChange={e => setDest(e.target.value)}
-          style={{ width: '100%', padding: '13px 16px', borderRadius: 12, border: `1px solid ${C.border}`, background: C.bg2, color: C.text, fontSize: 15, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
-        />
+          style={{
+            width: '100%',
+            padding: '14px 16px',
+            borderRadius: 12,
+            border: `1px solid ${C.border}`,
+            background: C.bg2,
+            color: dest ? C.text : C.muted,
+            fontSize: 15,
+            fontFamily: 'inherit',
+            outline: 'none',
+            cursor: 'pointer',
+            appearance: 'none',
+            WebkitAppearance: 'none',
+          }}
+        >
+          <option value="">역을 선택하세요</option>
+          {stations.map(s => (
+            <option key={s} value={s} style={{ background: C.card, color: C.text }}>
+              {s}역
+            </option>
+          ))}
+        </select>
       </div>
-      <button onClick={() => dest && onSubmit()}
-        style={{ ...st.btn, background: dest ? C.gradPurple : C.border, color: '#fff', opacity: dest ? 1 : 0.5 }}>
+      <button
+        onClick={() => dest && onSubmit()}
+        style={{ ...st.btn, background: dest ? C.gradPurple : C.border, color: '#fff', opacity: dest ? 1 : 0.5 }}
+      >
         제출하기
       </button>
     </div>
@@ -84,10 +107,15 @@ function SuccessStep({ dest, points, onDone }) {
   )
 }
 
-export default function RewardFlowScreen({ navigate, points, setPoints }) {
+export default function RewardFlowScreen({ navigate, points, setPoints, selectedLine, selectedStation }) {
   const [step, setStep] = useState(1)
   const [zone, setZone] = useState(null)
   const [dest, setDest] = useState('')
+
+  const allStations = selectedLine?.stations ?? []
+  const currentIdx = selectedStation ? allStations.indexOf(selectedStation) : -1
+  const nextStations = currentIdx >= 0 ? allStations.slice(currentIdx + 1) : allStations
+  const stationsForSelect = nextStations.length > 0 ? nextStations : allStations
 
   const handleSubmit = () => {
     if (!dest) return
@@ -101,7 +129,7 @@ export default function RewardFlowScreen({ navigate, points, setPoints }) {
 
       {step === 1 && <ConfirmStep onConfirm={() => setStep(2)} onCancel={() => navigate('main')} />}
       {step === 2 && <ZoneSelectStep zone={zone} setZone={setZone} onNext={() => setStep(3)} />}
-      {step === 3 && <DestinationStep dest={dest} setDest={setDest} onSubmit={handleSubmit} />}
+      {step === 3 && <DestinationStep dest={dest} setDest={setDest} onSubmit={handleSubmit} stations={stationsForSelect} />}
       {step === 4 && <SuccessStep dest={dest} points={points} onDone={() => navigate('main')} />}
     </div>
   )

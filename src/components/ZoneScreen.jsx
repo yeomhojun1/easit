@@ -28,11 +28,11 @@ function PremiumZoneGrid({ zones, selectedZone, onSelect }) {
   )
 }
 
-export default function ZoneScreen({ selectedCar, navigate, isPremium, setIsPremium }) {
+export default function ZoneScreen({ selectedCar, selectedLine, selectedStation, navigate, isPremium, setIsPremium }) {
   const [stops, setStops] = useState(2)
   const [selectedZone, setSelectedZone] = useState(null)
   const car = selectedCar || CARS[2]
-  const zoneData = isPremium ? ZONES_8 : ZONES_4
+  const zoneData = isPremium ? ZONES_6 : ZONES_3
   const adjustedZones = zoneData.map(z => ({ ...z, prob: Math.max(PROB_MIN, z.prob - stops * PROB_DECREASE_PER_STOP) }))
   const stopsAheadProb = Math.max(STOP_SIMPLE_MIN, car.prob - stops * STOP_SIMPLE_DECREASE)
   const targetStationName = STATIONS[Math.min(CURRENT_IDX + stops, STATIONS.length - 1)]
@@ -46,7 +46,10 @@ export default function ZoneScreen({ selectedCar, navigate, isPremium, setIsPrem
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <div style={{ fontSize: 24, fontWeight: 900 }}>{car.id}호차 상세</div>
-            <div style={{ color: C.sub, fontSize: 13, marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: C.sub, marginTop: 4 }}>
+              {selectedLine?.name && `${selectedLine.name} · `}{selectedStation && `${selectedStation}역 · `}{car.id}호차
+            </div>
+            <div style={{ color: C.sub, fontSize: 13, marginTop: 2 }}>
               현재 착석 확률 <span style={{ color: probColor(car.prob), fontWeight: 700 }}>{car.prob}%</span>
             </div>
           </div>

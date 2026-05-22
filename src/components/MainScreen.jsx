@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { C, st, MOCK_TRAINS, CARS, probColor } from '../constants'
 import { SUBWAY_LINES } from '../data/subway'
 
-export default function MainScreen({ navigate, setSelectedCar, user, onLogout }) {
+export default function MainScreen({ navigate, setSelectedCar, onSelectLine, onSelectStation, user, onLogout }) {
   const [view, setView] = useState('line')
   const [selectedLine, setSelectedLine] = useState(null)
   const [selectedStation, setSelectedStation] = useState(null)
@@ -52,7 +52,7 @@ export default function MainScreen({ navigate, setSelectedCar, user, onLogout })
         </div>
         <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
           {selectedLine.stations.map(station => (
-            <button key={station} onClick={() => { setSelectedStation(station); setView('trains') }}
+            <button key={station} onClick={() => { setSelectedStation(station); onSelectLine(selectedLine); onSelectStation(station); setView('trains') }}
               style={{ padding: '13px 18px', borderRadius: 12, border: `1px solid ${C.border}`, background: C.card, color: C.text, textAlign: 'left', cursor: 'pointer', fontSize: 15, fontFamily: 'inherit', fontWeight: 500 }}>
               {station}역
             </button>
