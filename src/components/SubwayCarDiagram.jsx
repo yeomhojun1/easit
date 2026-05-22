@@ -2,7 +2,28 @@ import { C, probColor } from '../constants'
 
 const ZONE_SEATS = { A: 5, B: 6, C: 5 }
 
-function Door({ number }) {
+function Door({ number, slim = false }) {
+  if (slim) {
+    // 프리미엄용: 얇은 세로선 + 번호만
+    return (
+      <div style={{
+        width: 14,
+        flexShrink: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: C.border + '44',
+        position: 'relative',
+      }}>
+        <div style={{ fontSize: 8, color: C.muted, fontWeight: 700, writingMode: 'vertical-rl' }}>
+          {number}
+        </div>
+      </div>
+    )
+  }
+
+  // 기존 3존용 Door (변경 없음)
   return (
     <div style={{ width: 28, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between', padding: '6px 0' }}>
       <div style={{ width: 24, height: 5, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 1 }} />
@@ -101,23 +122,25 @@ export default function SubwayCarDiagram({ zoneData, selected, onSelect, isPremi
         <span>뒷 칸 방향 →</span>
       </div>
 
-      <div style={{ overflowX: 'auto', paddingBottom: 4 }}>
+      <div style={{ overflowX: isPremium ? 'visible' : 'auto', paddingBottom: 4 }}>
         <div style={{
           display: 'flex', alignItems: 'stretch',
-          minWidth: isPremium ? 480 : 380, height: 120,
+          minWidth: isPremium ? 'unset' : 380,
+          width: '100%',
+          height: 120,
           border: `2px solid ${C.border}`,
           borderRadius: 14, background: C.bg2,
           overflow: 'hidden',
         }}>
           {isPremium ? (
             <>
-              <Door number={1} />
+              <Door number={1} slim={true} />
               <PremiumZoneSection zone1Key="A1" zone2Key="A2" zoneData={zoneData} selected={selected} onSelect={onSelect} />
-              <Door number={2} />
+              <Door number={2} slim={true} />
               <PremiumZoneSection zone1Key="B1" zone2Key="B2" zoneData={zoneData} selected={selected} onSelect={onSelect} />
-              <Door number={3} />
+              <Door number={3} slim={true} />
               <PremiumZoneSection zone1Key="C1" zone2Key="C2" zoneData={zoneData} selected={selected} onSelect={onSelect} />
-              <Door number={4} />
+              <Door number={4} slim={true} />
             </>
           ) : (
             <>
