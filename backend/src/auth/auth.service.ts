@@ -21,6 +21,7 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.users.findByEmail(email)
     if (!user) throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.')
+    if (!user.isActive) throw new UnauthorizedException('비활성화된 계정입니다.')
     const valid = await bcrypt.compare(password, user.password)
     if (!valid) throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.')
     return this.issueToken(user)

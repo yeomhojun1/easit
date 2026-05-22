@@ -33,18 +33,6 @@ export class AuthController {
     res.redirect(`${process.env.FRONTEND_URL}?token=${result.accessToken}`)
   }
 
-  // ── 네이버 OAuth
-  @Get('naver')
-  @UseGuards(AuthGuard('naver'))
-  naverLogin() {}
-
-  @Get('naver/callback')
-  @UseGuards(AuthGuard('naver'))
-  async naverCallback(@Req() req: any, @Res() res: any) {
-    const result = await this.auth.oauthLogin(req.user)
-    res.redirect(`${process.env.FRONTEND_URL}?token=${result.accessToken}`)
-  }
-
   // ── 구글 OAuth
   @Get('google')
   @UseGuards(AuthGuard('google'))

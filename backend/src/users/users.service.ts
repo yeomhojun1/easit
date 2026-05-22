@@ -13,7 +13,7 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    return this.repo.findOne({ where: { email }, select: ['id', 'email', 'password', 'name', 'points', 'provider'] })
+    return this.repo.findOne({ where: { email }, select: ['id', 'email', 'password', 'name', 'points', 'provider', 'isActive'] })
   }
 
   async findByProvider(provider: string, providerId: string) {

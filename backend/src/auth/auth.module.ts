@@ -7,7 +7,6 @@ import { AuthService } from './auth.service'
 import { AuthController } from './auth.controller'
 import { JwtStrategy } from './strategies/jwt.strategy'
 import { KakaoStrategy } from './strategies/kakao.strategy'
-import { NaverStrategy } from './strategies/naver.strategy'
 import { GoogleStrategy } from './strategies/google.strategy'
 
 @Module({
@@ -23,7 +22,7 @@ import { GoogleStrategy } from './strategies/google.strategy'
       }),
     }),
   ],
-  providers: [AuthService, JwtStrategy, KakaoStrategy, NaverStrategy, GoogleStrategy],
+  providers: [AuthService, JwtStrategy, KakaoStrategy, GoogleStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}
