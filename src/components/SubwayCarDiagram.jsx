@@ -59,7 +59,65 @@ function ZoneSection({ zoneKey, zoneData, selected, onSelect }) {
   )
 }
 
-export default function SubwayCarDiagram({ zoneData, selected, onSelect }) {
+function PremiumZoneSection({ zone1Key, zone2Key, zoneData, selected, onSelect }) {
+  const z1 = zoneData.find(z => z.key === zone1Key)
+  const z2 = zoneData.find(z => z.key === zone2Key)
+  const prob1 = z1?.prob ?? 0
+  const prob2 = z2?.prob ?? 0
+  const color1 = probColor(prob1)
+  const color2 = probColor(prob2)
+  const isSel1 = selected === zone1Key
+  const isSel2 = selected === zone2Key
+
+  return (
+    <div style={{ flex: 5, display: 'flex' }}>
+      {/* 서브존 1 */}
+      <div onClick={() => onSelect(zone1Key)} style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        background: isSel1 ? color1 + '18' : 'transparent',
+        border: `2px solid ${isSel1 ? color1 : 'transparent'}`,
+        borderRadius: '6px 0 0 6px',
+        cursor: 'pointer', transition: 'all 0.2s', overflow: 'hidden',
+      }}>
+        <div style={{ display: 'flex', gap: 2, padding: '6px 3px 4px', justifyContent: 'center' }}>
+          {[0, 1, 2].map(i => <Seat key={i} color={color1} />)}
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ fontSize: 12, fontWeight: 900, color: color1 }}>{z1?.label}</div>
+          <div style={{ fontSize: 12, fontWeight: 800, color: C.text }}>{prob1}%</div>
+        </div>
+        <div style={{ display: 'flex', gap: 2, padding: '4px 3px 6px', justifyContent: 'center' }}>
+          {[0, 1, 2].map(i => <Seat key={i} color={color1} />)}
+        </div>
+      </div>
+
+      {/* 구분선 */}
+      <div style={{ width: 1, background: C.border, flexShrink: 0 }} />
+
+      {/* 서브존 2 */}
+      <div onClick={() => onSelect(zone2Key)} style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        background: isSel2 ? color2 + '18' : 'transparent',
+        border: `2px solid ${isSel2 ? color2 : 'transparent'}`,
+        borderRadius: '0 6px 6px 0',
+        cursor: 'pointer', transition: 'all 0.2s', overflow: 'hidden',
+      }}>
+        <div style={{ display: 'flex', gap: 2, padding: '6px 3px 4px', justifyContent: 'center' }}>
+          {[0, 1, 2].map(i => <Seat key={i} color={color2} />)}
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ fontSize: 12, fontWeight: 900, color: color2 }}>{z2?.label}</div>
+          <div style={{ fontSize: 12, fontWeight: 800, color: C.text }}>{prob2}%</div>
+        </div>
+        <div style={{ display: 'flex', gap: 2, padding: '4px 3px 6px', justifyContent: 'center' }}>
+          {[0, 1, 2].map(i => <Seat key={i} color={color2} />)}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function SubwayCarDiagram({ zoneData, selected, onSelect, isPremium = false }) {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginBottom: 6 }}>
@@ -70,30 +128,45 @@ export default function SubwayCarDiagram({ zoneData, selected, onSelect }) {
       <div style={{ overflowX: 'auto', paddingBottom: 4 }}>
         <div style={{
           display: 'flex', alignItems: 'stretch',
-          minWidth: 380, height: 120,
+          minWidth: isPremium ? 480 : 380, height: 120,
           border: `2px solid ${C.border}`,
           borderRadius: 14, background: C.bg2,
           overflow: 'hidden',
         }}>
-          <Door number={1} />
-          <ZoneSection zoneKey="A" zoneData={zoneData} selected={selected} onSelect={onSelect} />
-          <Door number={2} />
-          <ZoneSection zoneKey="B" zoneData={zoneData} selected={selected} onSelect={onSelect} />
-          <Door number={3} />
-          <ZoneSection zoneKey="C" zoneData={zoneData} selected={selected} onSelect={onSelect} />
-          <Door number={4} />
+          {isPremium ? (
+            <>
+              <Door number={1} />
+              <PremiumZoneSection zone1Key="A1" zone2Key="A2" zoneData={zoneData} selected={selected} onSelect={onSelect} />
+              <Door number={2} />
+              <PremiumZoneSection zone1Key="B1" zone2Key="B2" zoneData={zoneData} selected={selected} onSelect={onSelect} />
+              <Door number={3} />
+              <PremiumZoneSection zone1Key="C1" zone2Key="C2" zoneData={zoneData} selected={selected} onSelect={onSelect} />
+              <Door number={4} />
+            </>
+          ) : (
+            <>
+              <Door number={1} />
+              <ZoneSection zoneKey="A" zoneData={zoneData} selected={selected} onSelect={onSelect} />
+              <Door number={2} />
+              <ZoneSection zoneKey="B" zoneData={zoneData} selected={selected} onSelect={onSelect} />
+              <Door number={3} />
+              <ZoneSection zoneKey="C" zoneData={zoneData} selected={selected} onSelect={onSelect} />
+              <Door number={4} />
+            </>
+          )}
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginTop: 12 }}>
+      {/* 존 버튼 셀렉터 */}
+      <div style={{ display: 'grid', gridTemplateColumns: isPremium ? '1fr 1fr 1fr 1fr 1fr 1fr' : '1fr 1fr 1fr', gap: 6, marginTop: 12 }}>
         {zoneData.map(z => {
           const color = probColor(z.prob)
           const isSelected = selected === z.key
           return (
             <button key={z.key} onClick={() => onSelect(z.key)}
               style={{ padding: '10px 4px', background: isSelected ? color + '22' : C.card, border: `2px solid ${isSelected ? color : C.border}`, borderRadius: 10, cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit' }}>
-              <div style={{ fontSize: 16, fontWeight: 900, color }}>{z.label}</div>
-              <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{z.desc}</div>
+              <div style={{ fontSize: isPremium ? 13 : 16, fontWeight: 900, color }}>{z.label}</div>
+              <div style={{ fontSize: 10, color: C.muted, marginTop: 2 }}>{z.prob}%</div>
             </button>
           )
         })}

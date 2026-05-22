@@ -7,26 +7,6 @@ const PROB_MIN = 10
 const STOP_SIMPLE_DECREASE = 5
 const STOP_SIMPLE_MIN = 20
 
-function PremiumZoneGrid({ zones, selectedZone, onSelect }) {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-      {zones.map(z => {
-        const color = probColor(z.prob)
-        const isSelected = selectedZone === z.key
-        return (
-          <button key={z.key} onClick={() => onSelect(z.key)}
-            style={{ padding: '14px 10px', background: isSelected ? color + '22' : C.bg2, border: `2px solid ${isSelected ? color : C.border}`, borderRadius: 12, cursor: 'pointer', textAlign: 'center', fontFamily: 'inherit' }}>
-            <div style={{ fontSize: 18, fontWeight: 900, color }}>{z.label}</div>
-            <div style={{ fontSize: 22, fontWeight: 900, color: C.text, marginTop: 4 }}>{z.prob}%</div>
-            <div style={{ marginTop: 8, height: 4, borderRadius: 2, background: C.border }}>
-              <div style={{ height: '100%', width: `${z.prob}%`, borderRadius: 2, background: color }} />
-            </div>
-          </button>
-        )
-      })}
-    </div>
-  )
-}
 
 export default function ZoneScreen({ selectedCar, selectedLine, selectedStation, navigate, isPremium, setIsPremium }) {
   const [stops, setStops] = useState(2)
@@ -65,11 +45,12 @@ export default function ZoneScreen({ selectedCar, selectedLine, selectedStation,
           <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>
             객차 존 배치 — {isPremium ? '8존 프리미엄' : '4존 기본'}
           </div>
-          {isPremium ? (
-            <PremiumZoneGrid zones={adjustedZones} selectedZone={selectedZone} onSelect={setSelectedZone} />
-          ) : (
-            <SubwayCarDiagram zoneData={adjustedZones} selected={selectedZone} onSelect={setSelectedZone} />
-          )}
+          <SubwayCarDiagram
+            zoneData={adjustedZones}
+            selected={selectedZone}
+            onSelect={setSelectedZone}
+            isPremium={isPremium}
+          />
         </div>
 
         <div style={st.card}>
