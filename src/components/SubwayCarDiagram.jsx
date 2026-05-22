@@ -70,48 +70,46 @@ function PremiumZoneSection({ zone1Key, zone2Key, zoneData, selected, onSelect }
   const isSel2 = selected === zone2Key
 
   return (
-    <div style={{ flex: 5, display: 'flex' }}>
-      {/* 서브존 1 */}
+    <div style={{ flex: 5, display: 'flex', flexDirection: 'column' }}>
+      {/* 위쪽 서브존 (A1) */}
       <div onClick={() => onSelect(zone1Key)} style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
+        flex: 1, display: 'flex', flexDirection: 'row',
+        alignItems: 'center', justifyContent: 'center', gap: 4,
         background: isSel1 ? color1 + '18' : 'transparent',
-        border: `2px solid ${isSel1 ? color1 : 'transparent'}`,
-        borderRadius: '6px 0 0 6px',
-        cursor: 'pointer', transition: 'all 0.2s', overflow: 'hidden',
+        borderLeft: `2px solid ${isSel1 ? color1 : 'transparent'}`,
+        borderRight: `2px solid ${isSel1 ? color1 : 'transparent'}`,
+        borderTop: `2px solid ${isSel1 ? color1 : 'transparent'}`,
+        cursor: 'pointer', transition: 'all 0.2s',
+        padding: '4px 6px',
       }}>
-        <div style={{ display: 'flex', gap: 2, padding: '6px 3px 4px', justifyContent: 'center' }}>
-          {[0, 1, 2].map(i => <Seat key={i} color={color1} />)}
+        {[0, 1, 2].map(i => <Seat key={i} color={color1} />)}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 4 }}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: color1, lineHeight: 1 }}>{z1?.label}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.text }}>{prob1}%</div>
         </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ fontSize: 12, fontWeight: 900, color: color1 }}>{z1?.label}</div>
-          <div style={{ fontSize: 12, fontWeight: 800, color: C.text }}>{prob1}%</div>
-        </div>
-        <div style={{ display: 'flex', gap: 2, padding: '4px 3px 6px', justifyContent: 'center' }}>
-          {[0, 1, 2].map(i => <Seat key={i} color={color1} />)}
-        </div>
+        {[0, 1, 2].map(i => <Seat key={i} color={color1} />)}
       </div>
 
-      {/* 구분선 */}
-      <div style={{ width: 1, background: C.border, flexShrink: 0 }} />
+      {/* 가로 구분선 */}
+      <div style={{ height: 1, background: C.border, flexShrink: 0 }} />
 
-      {/* 서브존 2 */}
+      {/* 아래쪽 서브존 (A2) */}
       <div onClick={() => onSelect(zone2Key)} style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
+        flex: 1, display: 'flex', flexDirection: 'row',
+        alignItems: 'center', justifyContent: 'center', gap: 4,
         background: isSel2 ? color2 + '18' : 'transparent',
-        border: `2px solid ${isSel2 ? color2 : 'transparent'}`,
-        borderRadius: '0 6px 6px 0',
-        cursor: 'pointer', transition: 'all 0.2s', overflow: 'hidden',
+        borderLeft: `2px solid ${isSel2 ? color2 : 'transparent'}`,
+        borderRight: `2px solid ${isSel2 ? color2 : 'transparent'}`,
+        borderBottom: `2px solid ${isSel2 ? color2 : 'transparent'}`,
+        cursor: 'pointer', transition: 'all 0.2s',
+        padding: '4px 6px',
       }}>
-        <div style={{ display: 'flex', gap: 2, padding: '6px 3px 4px', justifyContent: 'center' }}>
-          {[0, 1, 2].map(i => <Seat key={i} color={color2} />)}
+        {[0, 1, 2].map(i => <Seat key={i} color={color2} />)}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginLeft: 4 }}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: color2, lineHeight: 1 }}>{z2?.label}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: C.text }}>{prob2}%</div>
         </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ fontSize: 12, fontWeight: 900, color: color2 }}>{z2?.label}</div>
-          <div style={{ fontSize: 12, fontWeight: 800, color: C.text }}>{prob2}%</div>
-        </div>
-        <div style={{ display: 'flex', gap: 2, padding: '4px 3px 6px', justifyContent: 'center' }}>
-          {[0, 1, 2].map(i => <Seat key={i} color={color2} />)}
-        </div>
+        {[0, 1, 2].map(i => <Seat key={i} color={color2} />)}
       </div>
     </div>
   )
