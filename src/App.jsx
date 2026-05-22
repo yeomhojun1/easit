@@ -16,6 +16,7 @@ export default function App() {
   const [selectedCar, setSelectedCar] = useState(CARS[2])
   const [selectedLine, setSelectedLine] = useState(null)
   const [selectedStation, setSelectedStation] = useState(null)
+  const [selectedDirection, setSelectedDirection] = useState(null)
   const [points, setPoints] = useState(0)
   const [isPremium, setIsPremium] = useState(false)
   const [user, setUser] = useState(null)
@@ -51,9 +52,9 @@ export default function App() {
       {screen === 'onboarding'   && <OnboardingScreen navigate={navigate} />}
       {screen === 'login'        && <LoginScreen navigate={navigate} onLogin={handleLogin} />}
       {screen === 'signup'       && <SignupScreen navigate={navigate} onLogin={handleLogin} />}
-      {screen === 'main'         && <MainScreen navigate={navigate} setSelectedCar={setSelectedCar} onSelectLine={setSelectedLine} onSelectStation={setSelectedStation} user={user} onLogout={handleLogout} />}
-      {screen === 'zone'         && <ZoneScreen selectedCar={selectedCar} selectedLine={selectedLine} selectedStation={selectedStation} navigate={navigate} isPremium={isPremium} setIsPremium={setIsPremium} />}
-      {screen === 'reward-flow'  && <RewardFlowScreen navigate={navigate} points={points} setPoints={setPoints} selectedLine={selectedLine} selectedStation={selectedStation} />}
+      {screen === 'main'         && <MainScreen navigate={navigate} setSelectedCar={setSelectedCar} onSelectLine={(line) => { setSelectedLine(line); setSelectedDirection(null) }} onSelectStation={(station) => { setSelectedStation(station); setSelectedDirection(null) }} onSelectDirection={setSelectedDirection} user={user} onLogout={handleLogout} />}
+      {screen === 'zone'         && <ZoneScreen selectedCar={selectedCar} selectedLine={selectedLine} selectedStation={selectedStation} selectedDirection={selectedDirection} navigate={navigate} isPremium={isPremium} setIsPremium={setIsPremium} />}
+      {screen === 'reward-flow'  && <RewardFlowScreen navigate={navigate} points={points} setPoints={setPoints} selectedLine={selectedLine} selectedStation={selectedStation} selectedDirection={selectedDirection} />}
       {screen === 'rewards'      && <RewardsScreen points={points} isPremium={isPremium} setIsPremium={setIsPremium} />}
       {!AUTH_SCREENS.includes(screen) && <BottomNav screen={screen} navigate={navigate} />}
     </div>

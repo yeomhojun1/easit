@@ -8,7 +8,7 @@ const STOP_SIMPLE_DECREASE = 5
 const STOP_SIMPLE_MIN = 20
 
 
-export default function ZoneScreen({ selectedCar, selectedLine, selectedStation, navigate, isPremium, setIsPremium }) {
+export default function ZoneScreen({ selectedCar, selectedLine, selectedStation, selectedDirection, navigate, isPremium, setIsPremium }) {
   const [stops, setStops] = useState(2)
   const [selectedZone, setSelectedZone] = useState(null)
   const car = selectedCar || CARS[2]
@@ -70,8 +70,18 @@ export default function ZoneScreen({ selectedCar, selectedLine, selectedStation,
           </div>
         </div>
 
+        {(!selectedLine || !selectedStation) && (
+          <div style={{ textAlign: 'center', color: C.yellow, fontSize: 13, marginBottom: 8 }}>
+            호선과 탑승역을 먼저 선택해주세요
+          </div>
+        )}
+        {!selectedDirection && (
+          <div style={{ textAlign: 'center', color: C.yellow, fontSize: 13, marginBottom: 8 }}>
+            탑승 방향을 먼저 선택해주세요
+          </div>
+        )}
         <button onClick={() => navigate('reward-flow')}
-          style={{ ...st.btn, background: C.gradPurple, color: '#fff', boxShadow: '0 8px 24px rgba(102,126,234,0.3)' }}>
+          style={{ ...st.btn, background: C.gradPurple, color: '#fff', boxShadow: '0 8px 24px rgba(102,126,234,0.3)', opacity: selectedDirection ? 1 : 0.4, pointerEvents: selectedDirection ? 'auto' : 'none' }}>
           🪑 좌석에 앉았어요
         </button>
       </div>

@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { C, st, MOCK_TRAINS, CARS, probColor } from '../constants'
 import { SUBWAY_LINES } from '../data/subway'
 
-export default function MainScreen({ navigate, setSelectedCar, onSelectLine, onSelectStation, user, onLogout }) {
+export default function MainScreen({ navigate, setSelectedCar, onSelectLine, onSelectStation, onSelectDirection, user, onLogout }) {
   const [view, setView] = useState('line')
   const [selectedLine, setSelectedLine] = useState(null)
   const [selectedStation, setSelectedStation] = useState(null)
   const [trainIdx, setTrainIdx] = useState(0)
+  const [direction, setDirection] = useState(null)
 
   if (view === 'line') {
     return (
@@ -52,7 +53,7 @@ export default function MainScreen({ navigate, setSelectedCar, onSelectLine, onS
         </div>
         <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
           {selectedLine.stations.map(station => (
-            <button key={station} onClick={() => { setSelectedStation(station); onSelectLine(selectedLine); onSelectStation(station); setView('trains') }}
+            <button key={station} onClick={() => { setSelectedStation(station); onSelectLine(selectedLine); onSelectStation(station); setDirection(null); setView('trains') }}
               style={{ padding: '13px 18px', borderRadius: 12, border: `1px solid ${C.border}`, background: C.card, color: C.text, textAlign: 'left', cursor: 'pointer', fontSize: 15, fontFamily: 'inherit', fontWeight: 500 }}>
               {station}역
             </button>
@@ -80,6 +81,31 @@ export default function MainScreen({ navigate, setSelectedCar, onSelectLine, onS
       </div>
 
       <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {(() => {
+          const allStations = selectedLine?.stations ?? []
+          const idx = allStations.indexOf(selectedStation)
+          const prevStation = idx > 0 ? allStations[idx - 1] : null
+          const nextStation = idx < allStations.length - 1 ? allStations[idx + 1] : null
+          return (
+            <div style={st.card}>
+              <div style={{ fontSize: 12, color: C.muted, fontWeight: 700, marginBottom: 12 }}>탑승 방향</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {prevStation && (
+                  <button onClick={() => { setDirection(prevStation); onSelectDirection(`${prevStation} 방향`) }}
+                    style={{ flex: 1, padding: '12px 8px', borderRadius: 12, border: `1.5px solid ${direction === prevStation ? C.accent : C.border}`, background: direction === prevStation ? C.accentDark + '33' : C.bg2, color: direction === prevStation ? C.accent : C.text, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    ← {prevStation} 방향
+                  </button>
+                )}
+                {nextStation && (
+                  <button onClick={() => { setDirection(nextStation); onSelectDirection(`${nextStation} 방향`) }}
+                    style={{ flex: 1, padding: '12px 8px', borderRadius: 12, border: `1.5px solid ${direction === nextStation ? C.accent : C.border}`, background: direction === nextStation ? C.accentDark + '33' : C.bg2, color: direction === nextStation ? C.accent : C.text, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    {nextStation} 방향 →
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })()}
         <div style={st.card}>
           <div style={{ fontSize: 12, color: C.muted, fontWeight: 700, marginBottom: 12 }}>도착 예정 열차</div>
           {MOCK_TRAINS.map((t, i) => (
