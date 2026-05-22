@@ -11,21 +11,23 @@ export const MOCK_TRAINS = [
 export const CARS = Array.from({ length: 10 }, (_, i) => ({
   id: i + 1,
   prob: [38, 52, 71, 65, 44, 29, 60, 73, 48, 35][i],
-  priority: i === 0 || i === 9,
 }))
 
-export const ZONES_4 = [
-  { key: 'A', label: '존 A', desc: '1번 출입문', prob: 55 },
-  { key: 'B', label: '존 B', desc: '2번 출입문', prob: 72 },
-  { key: 'C', label: '존 C', desc: '3번 출입문', prob: 68 },
-  { key: 'D', label: '존 D', desc: '4번 출입문', prob: 49 },
+// ZONES_3: 기본 3존 (노약자석 제거, 출입문 사이 3구간)
+export const ZONES_3 = [
+  { key: 'A', label: '존 A', desc: '1·2번 출입문 사이', prob: 55 },
+  { key: 'B', label: '존 B', desc: '2·3번 출입문 사이', prob: 72 },
+  { key: 'C', label: '존 C', desc: '3·4번 출입문 사이', prob: 68 },
 ]
 
-export const ZONES_8 = [
-  { key: 'A1', label: 'A-1', prob: 58 }, { key: 'A2', label: 'A-2', prob: 51 },
-  { key: 'B1', label: 'B-1', prob: 75 }, { key: 'B2', label: 'B-2', prob: 68 },
-  { key: 'C1', label: 'C-1', prob: 71 }, { key: 'C2', label: 'C-2', prob: 64 },
-  { key: 'D1', label: 'D-1', prob: 52 }, { key: 'D2', label: 'D-2', prob: 45 },
+// ZONES_6: 프리미엄 6존 (각 존을 반으로 세분화)
+export const ZONES_6 = [
+  { key: 'A1', label: 'A-1', desc: '1번 출입문 쪽', prob: 58 },
+  { key: 'A2', label: 'A-2', desc: '2번 출입문 쪽', prob: 51 },
+  { key: 'B1', label: 'B-1', desc: '2번 출입문 쪽', prob: 75 },
+  { key: 'B2', label: 'B-2', desc: '3번 출입문 쪽', prob: 68 },
+  { key: 'C1', label: 'C-1', desc: '3번 출입문 쪽', prob: 71 },
+  { key: 'C2', label: 'C-2', desc: '4번 출입문 쪽', prob: 64 },
 ]
 
 export const MISSIONS = [

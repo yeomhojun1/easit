@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { C, st, CARS, ZONES_4, ZONES_8, STATIONS, CURRENT_IDX, probColor } from '../constants'
+import { C, st, CARS, ZONES_3, ZONES_6, STATIONS, CURRENT_IDX, probColor } from '../constants'
 import SubwayCarDiagram from './SubwayCarDiagram'
 
 const PROB_DECREASE_PER_STOP = 4

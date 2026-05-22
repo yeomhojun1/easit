@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { C, st, ZONES_4, STATIONS, CURRENT_IDX } from '../constants'
+import { C, st, ZONES_3 } from '../constants'
 import SubwayCarDiagram from './SubwayCarDiagram'
 
 const REWARD_STEPS = ['착석 확인', '존 선택', '하차역 입력', '포인트 적립']
@@ -38,7 +38,7 @@ function ZoneSelectStep({ zone, setZone, onNext }) {
   return (
     <div>
       <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 18 }}>어느 존에 앉으셨나요?</div>
-      <SubwayCarDiagram zoneData={ZONES_4} selected={zone} onSelect={setZone} />
+      <SubwayCarDiagram zoneData={ZONES_3} selected={zone} onSelect={setZone} />
       <button onClick={() => zone && onNext()}
         style={{ ...st.btn, background: zone ? C.gradPurple : C.border, color: '#fff', marginTop: 20, opacity: zone ? 1 : 0.5 }}>
         다음
@@ -51,13 +51,13 @@ function DestinationStep({ dest, setDest, onSubmit }) {
   return (
     <div>
       <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 18 }}>어느 역에서 내리실 건가요?</div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
-        {STATIONS.slice(CURRENT_IDX + 1).map(s => (
-          <button key={s} onClick={() => setDest(s)}
-            style={{ padding: '14px 18px', borderRadius: 12, border: `2px solid ${dest === s ? C.accent : C.border}`, background: dest === s ? C.accentDark + '33' : C.card, color: dest === s ? C.accent : C.text, textAlign: 'left', cursor: 'pointer', fontWeight: dest === s ? 700 : 400, fontSize: 15, fontFamily: 'inherit' }}>
-            {s}역
-          </button>
-        ))}
+      <div style={{ ...{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 16 }, marginBottom: 24 }}>
+        <input
+          placeholder="하차역 입력 (예: 강남)"
+          value={dest}
+          onChange={e => setDest(e.target.value)}
+          style={{ width: '100%', padding: '13px 16px', borderRadius: 12, border: `1px solid ${C.border}`, background: C.bg2, color: C.text, fontSize: 15, fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
+        />
       </div>
       <button onClick={() => dest && onSubmit()}
         style={{ ...st.btn, background: dest ? C.gradPurple : C.border, color: '#fff', opacity: dest ? 1 : 0.5 }}>
