@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { C, st, MOCK_TRAINS, CARS, probColor } from '../constants'
 import { SUBWAY_LINES } from '../data/subway'
+import { fetchSeatPrediction, todayType, nowTime } from '../prediction'
 
 export default function MainScreen({ navigate, setSelectedCar, onSelectLine, onSelectStation, onSelectDirection, user, onLogout }) {
   const [view, setView] = useState('line')
@@ -8,6 +9,15 @@ export default function MainScreen({ navigate, setSelectedCar, onSelectLine, onS
   const [selectedStation, setSelectedStation] = useState(null)
   const [trainIdx, setTrainIdx] = useState(0)
   const [direction, setDirection] = useState(null)
+  const [prediction, setPrediction] = useState(null)
+
+  useEffect(() => {
+    if (!direction || !selectedLine || !selectedStation) { setPrediction(null); return }
+    let alive = true
+    fetchSeatPrediction({ line: selectedLine.name, station: selectedStation, next: direction })
+      .then(p => { if (alive) setPrediction(p) })
+    return () => { alive = false }
+  }, [direction, selectedLine, selectedStation])
 
   if (view === 'line') {
     return (
@@ -106,6 +116,41 @@ export default function MainScreen({ navigate, setSelectedCar, onSelectLine, onS
             </div>
           )
         })()}
+        {direction && (
+          prediction ? (
+            <div style={{ ...st.card, border: `1px solid ${C.green}44` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <span style={{ fontSize: 12, color: C.muted, fontWeight: 700 }}>실데이터 착석 예측</span>
+                <span style={{ display: 'inline-flex', padding: '3px 10px', borderRadius: 20, background: C.green + '22', color: C.green, fontSize: 11, fontWeight: 600 }}>
+                  📊 서울교통공사 혼잡도
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <div style={{ flex: 1, background: C.bg2, borderRadius: 12, padding: '12px 8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: prediction.congestion >= 60 ? C.red : prediction.congestion >= 34 ? C.yellow : C.green }}>
+                    {prediction.congestion}%
+                  </div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>열차 혼잡도</div>
+                </div>
+                <div style={{ flex: 1, background: C.bg2, borderRadius: 12, padding: '12px 8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: probColor(Math.round(prediction.pSitNow * 100)) }}>
+                    {Math.round(prediction.pSitNow * 100)}%
+                  </div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 3 }}>지금 타면 앉을 확률</div>
+                </div>
+              </div>
+              <div style={{ marginTop: 10, fontSize: 11, color: C.muted }}>
+                {prediction.direction} · {todayType()} {nowTime()} 기준 · 30분 단위 통계 보간
+              </div>
+            </div>
+          ) : (
+            <div style={{ ...st.card, padding: '10px 16px' }}>
+              <div style={{ fontSize: 12, color: C.muted }}>
+                이 노선·역은 혼잡도 실데이터 미지원(1~8호선만) — 아래 확률은 데모 값입니다
+              </div>
+            </div>
+          )
+        )}
         <div style={st.card}>
           <div style={{ fontSize: 12, color: C.muted, fontWeight: 700, marginBottom: 12 }}>도착 예정 열차</div>
           {MOCK_TRAINS.map((t, i) => (

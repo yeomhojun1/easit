@@ -1,21 +1,50 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { C, st, CARS, ZONES_3, ZONES_6, STATIONS, CURRENT_IDX, probColor } from '../constants'
 import SubwayCarDiagram from './SubwayCarDiagram'
+import { fetchSeatPrediction } from '../prediction'
 
 const PROB_DECREASE_PER_STOP = 4
 const PROB_MIN = 10
 const STOP_SIMPLE_DECREASE = 5
 const STOP_SIMPLE_MIN = 20
+const MAX_STOPS = 8
 
 
 export default function ZoneScreen({ selectedCar, selectedLine, selectedStation, selectedDirection, navigate, isPremium, setIsPremium }) {
   const [stops, setStops] = useState(2)
   const [selectedZone, setSelectedZone] = useState(null)
+  const [prediction, setPrediction] = useState(null)
   const car = selectedCar || CARS[2]
   const zoneData = isPremium ? ZONES_6 : ZONES_3
-  const adjustedZones = zoneData.map(z => ({ ...z, prob: Math.max(PROB_MIN, z.prob - stops * PROB_DECREASE_PER_STOP) }))
-  const stopsAheadProb = Math.max(STOP_SIMPLE_MIN, car.prob - stops * STOP_SIMPLE_DECREASE)
-  const targetStationName = STATIONS[Math.min(CURRENT_IDX + stops, STATIONS.length - 1)]
+
+  useEffect(() => {
+    const next = selectedDirection?.replace(' 방향', '')
+    if (!next || !selectedLine || !selectedStation) { setPrediction(null); return }
+    let alive = true
+    fetchSeatPrediction({ line: selectedLine.name, station: selectedStation, next, stops: MAX_STOPS })
+      .then(p => { if (alive) setPrediction(p) })
+    return () => { alive = false }
+  }, [selectedDirection, selectedLine, selectedStation])
+
+  const journey = prediction?.journey?.length ? prediction.journey : null
+  const journeyStep = journey ? journey[Math.min(stops, journey.length) - 1] : null
+
+  const nowProb = prediction ? Math.round(prediction.pSitNow * 100) : car.prob
+  const stopsAheadProb = journeyStep
+    ? Math.round(journeyStep.pCumulative * 100)
+    : Math.max(STOP_SIMPLE_MIN, car.prob - stops * STOP_SIMPLE_DECREASE)
+  const targetStationName = journeyStep
+    ? journeyStep.station
+    : STATIONS[Math.min(CURRENT_IDX + stops, STATIONS.length - 1)]
+
+  // 존별 확률: 실데이터가 있으면 존 간 상대 가중치(기본값 평균 대비)를 실제 확률에 입힌다
+  const zoneMean = zoneData.reduce((s, z) => s + z.prob, 0) / zoneData.length
+  const adjustedZones = zoneData.map(z => ({
+    ...z,
+    prob: journeyStep
+      ? Math.min(99, Math.max(1, Math.round((z.prob / zoneMean) * stopsAheadProb)))
+      : Math.max(PROB_MIN, z.prob - stops * PROB_DECREASE_PER_STOP),
+  }))
 
   return (
     <div style={{ paddingBottom: 80 }}>
@@ -30,7 +59,12 @@ export default function ZoneScreen({ selectedCar, selectedLine, selectedStation,
               {selectedLine?.name && `${selectedLine.name} · `}{selectedStation && `${selectedStation}역 · `}{car.id}호차
             </div>
             <div style={{ color: C.sub, fontSize: 13, marginTop: 2 }}>
-              현재 착석 확률 <span style={{ color: probColor(car.prob), fontWeight: 700 }}>{car.prob}%</span>
+              현재 착석 확률 <span style={{ color: probColor(nowProb), fontWeight: 700 }}>{nowProb}%</span>
+            </div>
+            <div style={{ marginTop: 6 }}>
+              <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 20, background: prediction ? C.green + '22' : C.border, color: prediction ? C.green : C.muted, fontSize: 10, fontWeight: 600 }}>
+                {prediction ? '📊 서울교통공사 혼잡도 기반' : '데모 데이터'}
+              </span>
             </div>
           </div>
           <button onClick={() => setIsPremium(!isPremium)}
@@ -58,12 +92,17 @@ export default function ZoneScreen({ selectedCar, selectedLine, selectedStation,
             <span style={{ fontSize: 13, fontWeight: 700 }}>정거장 후 착석 확률</span>
             <span style={{ fontSize: 20, fontWeight: 900, color: C.accent }}>{stops}정거장 후</span>
           </div>
-          <input type="range" min={1} max={8} value={stops} onChange={e => setStops(+e.target.value)} style={{ width: '100%', accentColor: C.accent }} />
+          <input type="range" min={1} max={journey ? journey.length : MAX_STOPS} value={Math.min(stops, journey ? journey.length : MAX_STOPS)} onChange={e => setStops(+e.target.value)} style={{ width: '100%', accentColor: C.accent }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: C.muted, marginTop: 6 }}>
-            <span>1정거장</span><span>8정거장</span>
+            <span>1정거장</span><span>{journey ? journey.length : MAX_STOPS}정거장</span>
           </div>
           <div style={{ marginTop: 12, padding: '14px 16px', background: C.bg2, borderRadius: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13, color: C.sub }}>{targetStationName}역 즈음</span>
+            <div>
+              <span style={{ fontSize: 13, color: C.sub }}>{targetStationName}역 {journeyStep ? '까지 누적' : '즈음'}</span>
+              {journeyStep && (
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>그 구간 혼잡도 {journeyStep.congestion}%</div>
+              )}
+            </div>
             <span style={{ fontSize: 24, fontWeight: 900, color: probColor(stopsAheadProb) }}>
               {stopsAheadProb}%
             </span>
