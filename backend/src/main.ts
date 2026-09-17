@@ -25,7 +25,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }))
   app.setGlobalPrefix('api')
 
-  const port = process.env.PORT || 3000
+  const port = process.env.PORT || 4003
   await app.listen(port)
   console.log(`🚇 Easit 백엔드 실행 중: http://localhost:${port}/api`)
 }

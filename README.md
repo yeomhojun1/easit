@@ -9,7 +9,7 @@
 - **실데이터 착석 확률 예측** — 서울교통공사 혼잡도 통계(1~8호선) 기반, 아래 상세
 - 탑승 중인 열차·좌석 체크인
 - 노선/칸별 빈자리 예측 정보 확인
-- 카카오 · 네이버 · 구글 소셜 로그인
+- 카카오 · 네이버 · 구글 소셜 로그인 (키가 설정된 것만 버튼 노출, 없으면 이메일 로그인만)
 
 ## 📊 착석 확률 예측 모델 (실데이터)
 
@@ -21,7 +21,9 @@
 1. **즉시 착석**: 혼잡도 `c`의 로지스틱 함수 `1/(1+e^((c-32)/5))` — 혼잡 10%면 ~99%, 50%면 ~3%
 2. **k정거장 후**: 진행 방향의 다음 역들에서 혼잡도가 줄어드는 만큼(하차) 좌석이 나고,
    서 있는 사람들이 경쟁한다고 보고 역마다 `p_i = 빈좌석/입석자`를 누적 — `P_k = 1-(1-P_0)·Π(1-p_i)`
-3. 30분 슬롯 사이는 선형 보간, 상·하선은 역번호 증감으로 판별
+3. 30분 슬롯 사이는 선형 보간, 상·하선(내·외선)은 프론트 `SUBWAY_LINES` 배열의 역 순서로 판별
+4. 노선 순서의 정본은 프론트 `src/data/subway.js` — 같은 역명이 여러 승강장 코드로 오면(2호선 성수 211/9002)
+   본선을 정본으로, 지선 승강장 시계열은 `성수(지선)` 같은 별도 키로 보존한다. 지선은 별도 트랙으로 조회
 
 ```bash
 # 모델 재생성 (원본 CSV → JSON)
@@ -29,6 +31,9 @@ cd backend && node scripts/build-congestion-model.mjs
 
 # 예측 API 스모크 테스트 (DB 불필요)
 npm run build && node scripts/smoke-prediction.js
+
+# 예측 모델 단위 테스트 (DB 불필요)
+npm test
 ```
 
 ```
@@ -55,32 +60,61 @@ easit/
 └─ backend/    # NestJS API 서버 (TypeORM + PostgreSQL)
 ```
 
-## 🚀 실행 방법
+## 🚀 실행 방법 (Docker 불필요)
+
+### 1. PostgreSQL 16
+
+네이티브 설치(권장, Windows):
+
+```powershell
+# 설치 후 psql 로 DB·계정 생성
+psql -U postgres -c "CREATE USER easit WITH PASSWORD 'easit1234';"
+psql -U postgres -c "CREATE DATABASE easit OWNER easit;"
+```
+
+docker 가 있다면 DB만 컨테이너로 띄워도 됩니다 (`docker compose up -d db`).
+테이블은 TypeORM `synchronize: true` 로 자동 생성됩니다.
+
+### 2. 환경변수
 
 ```bash
-# 프론트엔드 (루트)
-npm install
-npm run dev
+cp .env.example .env   # 소셜 로그인 키는 비워둬도 됩니다
+```
 
-# 백엔드
+### 3. 실행
+
+```bash
+# 백엔드 (포트 4003)
 cd backend
 npm install
-# .env 설정 (아래 참고)
 npm run start:dev
+
+# 프론트엔드 (포트 5173, 루트)
+npm install
+npm run dev
 ```
 
-## 🔑 환경변수 (레포 루트의 `.env` — 코드가 `../.env`를 읽음)
+> 소셜 로그인 키(`KAKAO_REST_API_KEY` 등)가 없으면 해당 전략을 아예 등록하지 않으므로
+> 백엔드는 정상 기동하고, 프론트는 `GET /api/auth/providers` 응답에 따라 등록된 버튼만 보여줍니다.
+> 미설정 프로바이더로 직접 접근하면 503 JSON 으로 응답합니다.
+
+## 🔑 환경변수 (레포 루트의 `.env` — 백엔드가 `../.env`를 읽음)
 
 ```
+PORT=4003
+VITE_API_URL=http://localhost:4003/api
+
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=easit
 DB_PASS=easit1234
 DB_NAME=easit
 
-JWT_SECRET=32자_이상_랜덤_문자열
-KAKAO_REST_API_KEY=카카오_REST_API_키
-KAKAO_CALLBACK_URL=http://localhost:3000/api/auth/kakao/callback
+JWT_SECRET=32자_이상_랜덤_문자열   # 없으면 개발용 기본값으로 동작
+
+# 선택 — 없으면 해당 소셜 버튼이 숨겨집니다
+# KAKAO_REST_API_KEY=카카오_REST_API_키
+KAKAO_CALLBACK_URL=http://localhost:4003/api/auth/kakao/callback
 ```
 
 > `.env.example`을 복사해 `.env`를 만들어 값을 채워주세요.

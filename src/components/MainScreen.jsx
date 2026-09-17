@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { C, st, MOCK_TRAINS, CARS, probColor } from '../constants'
 import { SUBWAY_LINES } from '../data/subway'
-import { fetchSeatPrediction, todayType, nowTime } from '../prediction'
+import { fetchSeatPrediction, todayType, nowTime, predictionNotice } from '../prediction'
 
 export default function MainScreen({ navigate, setSelectedCar, onSelectLine, onSelectStation, onSelectDirection, user, onLogout }) {
   const [view, setView] = useState('line')
@@ -117,7 +117,7 @@ export default function MainScreen({ navigate, setSelectedCar, onSelectLine, onS
           )
         })()}
         {direction && (
-          prediction ? (
+          prediction?.supported ? (
             <div style={{ ...st.card, border: `1px solid ${C.green}44` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <span style={{ fontSize: 12, color: C.muted, fontWeight: 700 }}>실데이터 착석 예측</span>
@@ -145,8 +145,8 @@ export default function MainScreen({ navigate, setSelectedCar, onSelectLine, onS
             </div>
           ) : (
             <div style={{ ...st.card, padding: '10px 16px' }}>
-              <div style={{ fontSize: 12, color: C.muted }}>
-                이 노선·역은 혼잡도 실데이터 미지원(1~8호선만) — 아래 확률은 데모 값입니다
+              <div style={{ fontSize: 12, color: prediction?.status === 'unsupported' ? C.muted : C.yellow }}>
+                {predictionNotice(prediction) ?? '착석 예측을 불러오는 중입니다…'}
               </div>
             </div>
           )

@@ -107,15 +107,21 @@ function SuccessStep({ dest, points, onDone }) {
   )
 }
 
-export default function RewardFlowScreen({ navigate, points, setPoints, selectedLine, selectedStation }) {
+export default function RewardFlowScreen({ navigate, points, setPoints, selectedLine, selectedStation, selectedDirection }) {
   const [step, setStep] = useState(1)
   const [zone, setZone] = useState(null)
   const [dest, setDest] = useState('')
 
+  // 하차역 후보는 "선택한 탑승 방향" 쪽 역들만 (이전 역 방향으로 탈 때 목록이 반대이던 문제)
   const allStations = selectedLine?.stations ?? []
   const currentIdx = selectedStation ? allStations.indexOf(selectedStation) : -1
-  const nextStations = currentIdx >= 0 ? allStations.slice(currentIdx + 1) : allStations
-  const stationsForSelect = nextStations.length > 0 ? nextStations : allStations
+  const nextIdx = selectedDirection ? allStations.indexOf(selectedDirection.replace(' 방향', '')) : -1
+  const backward = currentIdx >= 0 && nextIdx >= 0 && nextIdx < currentIdx
+  const aheadStations =
+    currentIdx < 0 ? allStations
+      : backward ? allStations.slice(0, currentIdx).reverse()
+        : allStations.slice(currentIdx + 1)
+  const stationsForSelect = aheadStations.length > 0 ? aheadStations : allStations
 
   const handleSubmit = () => {
     if (!dest) return

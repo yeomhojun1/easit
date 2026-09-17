@@ -19,7 +19,11 @@ export class PredictionController {
       const now = new Date()
       time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
     }
-    if (!/^\d{1,2}:\d{2}$/.test(time)) throw new BadRequestException('time은 HH:MM 형식이어야 합니다.')
+    const hm = /^(\d{1,2}):(\d{2})$/.exec(time)
+    if (!hm) throw new BadRequestException('time은 HH:MM 형식이어야 합니다.')
+    const hour = Number(hm[1])
+    const minute = Number(hm[2])
+    if (hour > 23 || minute > 59) throw new BadRequestException('time은 00:00~23:59 범위여야 합니다.')
     return predictSeat(line, station, next, day, time, parseInt(stops, 10) || 8)
   }
 }

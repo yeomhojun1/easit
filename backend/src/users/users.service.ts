@@ -20,7 +20,7 @@ export class UsersService {
     return this.repo.findOne({ where: { provider, providerId } })
   }
 
-  async createEmailUser(dto: { name: string; email: string; password: string; phone: string; birthDate: string; gender: string }) {
+  async createEmailUser(dto: { name: string; email: string; password: string; phone?: string; birthDate?: string; gender?: string }) {
     const hashed = await bcrypt.hash(dto.password, 10)
     const user = this.repo.create({ ...dto, password: hashed, provider: 'email' })
     try {
@@ -35,7 +35,15 @@ export class UsersService {
 
   async createOAuthUser(dto: { name: string; email: string; provider: string; providerId: string }) {
     const user = this.repo.create({ ...dto, points: 0 })
-    return this.repo.save(user)
+    try {
+      return await this.repo.save(user)
+    } catch (err: any) {
+      // 같은 이메일로 이미 이메일 가입이 되어 있는 경우 (500 대신 409)
+      if (err?.code === '23505') {
+        throw new ConflictException('이미 같은 이메일로 가입된 계정이 있습니다. 이메일 로그인을 이용해주세요.')
+      }
+      throw err
+    }
   }
 
   async addPoints(id: string, amount: number) {

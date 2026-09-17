@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { C, st, CARS, ZONES_3, ZONES_6, STATIONS, CURRENT_IDX, probColor } from '../constants'
 import SubwayCarDiagram from './SubwayCarDiagram'
-import { fetchSeatPrediction } from '../prediction'
+import { fetchSeatPrediction, predictionNotice } from '../prediction'
 
 const PROB_DECREASE_PER_STOP = 4
 const PROB_MIN = 10
@@ -26,16 +26,23 @@ export default function ZoneScreen({ selectedCar, selectedLine, selectedStation,
     return () => { alive = false }
   }, [selectedDirection, selectedLine, selectedStation])
 
+  const hasRealData = !!prediction?.supported
   const journey = prediction?.journey?.length ? prediction.journey : null
   const journeyStep = journey ? journey[Math.min(stops, journey.length) - 1] : null
 
-  const nowProb = prediction ? Math.round(prediction.pSitNow * 100) : car.prob
+  // 데모 모드에서도 실제로 선택한 노선·방향의 역 이름을 쓴다 (2호선 상수 고정이던 문제)
+  const demoStations = selectedLine?.stations?.length ? selectedLine.stations : STATIONS
+  const demoBase = selectedStation ? demoStations.indexOf(selectedStation) : -1
+  const demoNext = selectedDirection ? demoStations.indexOf(selectedDirection.replace(' 방향', '')) : -1
+  const demoStep = demoBase >= 0 && demoNext >= 0 && demoNext < demoBase ? -1 : 1
+  const demoIdx = demoBase >= 0 ? demoBase + demoStep * stops : CURRENT_IDX + stops
+  const demoStation = demoStations[Math.max(0, Math.min(demoIdx, demoStations.length - 1))]
+
+  const nowProb = hasRealData ? Math.round(prediction.pSitNow * 100) : car.prob
   const stopsAheadProb = journeyStep
     ? Math.round(journeyStep.pCumulative * 100)
     : Math.max(STOP_SIMPLE_MIN, car.prob - stops * STOP_SIMPLE_DECREASE)
-  const targetStationName = journeyStep
-    ? journeyStep.station
-    : STATIONS[Math.min(CURRENT_IDX + stops, STATIONS.length - 1)]
+  const targetStationName = journeyStep ? journeyStep.station : demoStation
 
   // 존별 확률: 실데이터가 있으면 존 간 상대 가중치(기본값 평균 대비)를 실제 확률에 입힌다
   const zoneMean = zoneData.reduce((s, z) => s + z.prob, 0) / zoneData.length
@@ -62,14 +69,14 @@ export default function ZoneScreen({ selectedCar, selectedLine, selectedStation,
               현재 착석 확률 <span style={{ color: probColor(nowProb), fontWeight: 700 }}>{nowProb}%</span>
             </div>
             <div style={{ marginTop: 6 }}>
-              <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 20, background: prediction ? C.green + '22' : C.border, color: prediction ? C.green : C.muted, fontSize: 10, fontWeight: 600 }}>
-                {prediction ? '📊 서울교통공사 혼잡도 기반' : '데모 데이터'}
+              <span style={{ display: 'inline-flex', padding: '2px 8px', borderRadius: 20, background: hasRealData ? C.green + '22' : C.border, color: hasRealData ? C.green : C.muted, fontSize: 10, fontWeight: 600 }}>
+                {hasRealData ? '📊 서울교통공사 혼잡도 기반' : '데모 데이터'}
               </span>
             </div>
           </div>
           <button onClick={() => setIsPremium(!isPremium)}
             style={{ padding: '7px 14px', borderRadius: 20, border: `1px solid ${isPremium ? C.accent : C.border}`, background: isPremium ? C.gradPurple : 'transparent', color: isPremium ? '#fff' : C.sub, cursor: 'pointer', fontSize: 13, fontWeight: 700, fontFamily: 'inherit' }}>
-            {isPremium ? '⭐ 프리미엄' : '🔒 8존 보기'}
+            {isPremium ? '⭐ 프리미엄' : '🔒 6존 보기'}
           </button>
         </div>
       </div>
@@ -77,8 +84,13 @@ export default function ZoneScreen({ selectedCar, selectedLine, selectedStation,
       <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={st.card}>
           <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>
-            객차 존 배치 — {isPremium ? '8존 프리미엄' : '4존 기본'}
+            객차 존 배치 — {isPremium ? '6존 프리미엄' : '3존 기본'}
           </div>
+          {!hasRealData && predictionNotice(prediction) && (
+            <div style={{ fontSize: 11, color: prediction?.status === 'unsupported' ? C.muted : C.yellow, marginBottom: 10 }}>
+              {predictionNotice(prediction)}
+            </div>
+          )}
           <SubwayCarDiagram
             zoneData={adjustedZones}
             selected={selectedZone}

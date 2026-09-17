@@ -33,12 +33,26 @@ export interface SeatPrediction {
   meta?: { source: string; seatCongestion: number }
 }
 
+interface OrderEntry {
+  name: string
+  code: number | null
+  key?: string // data 키가 역명과 다른 경우(지선 승강장 등)
+}
+
+// 노선은 본선 1개 + 지선 n개의 트랙으로 이루어진다. 각 트랙 안에서만 앞뒤 역을 걷는다.
+interface Track {
+  name?: string
+  order: OrderEntry[]
+  invertDirection?: boolean // 본선과 상·하선(내·외선) 라벨이 반대인 지선
+}
+
 interface Model {
   meta: { source: string; slots: string[]; days: string[] }
   lines: Record<
     string,
     {
-      order: { name: string; code: number }[]
+      order: OrderEntry[]
+      branches?: Track[]
       data: Record<string, Record<string, Record<string, number[]>>>
     }
   >
@@ -84,15 +98,15 @@ const ALIASES: Record<string, string> = {
   뚝섬유원지: '자양',
 }
 
-function findStation(order: { name: string; code: number }[], name: string): number {
+function findStation(order: OrderEntry[], name: string): number {
   const target = norm(name.replace(/\(.*?\)/g, ''))
   const candidates = [target, ALIASES[target]].filter(Boolean)
   return order.findIndex((s) => nameKeys(s.name).some((k) => candidates.includes(k)))
 }
 
-// 이동 방향(역번호 증가/감소) → CSV의 상·하선 라벨.
-// 서울교통공사 관례: 3~8호선은 역번호가 작은 종점(대화·당고개·방화·응암·장암·암사) 방면이 상선.
-// 1호선(서울역~청량리 구간)은 소요산 방면(역번호 증가)이 상행, 2호선은 시계방향(역번호 증가)이 내선.
+// 이동 방향(프론트 노선 배열의 인덱스 증가/감소) → CSV의 상·하선 라벨.
+// 프론트 배열은 3~8호선이 상선 종점(대화·진접·방화·응암·장암·별내)에서 시작하므로 인덱스 증가 = 하선.
+// 1호선 배열은 소요산→신창 순이라 인덱스 증가 = 상선(인천·신창 방면), 2호선은 시청→을지로입구 순이라 인덱스 증가 = 내선.
 function directionLabel(line: string, ascending: boolean): string {
   if (line === '2호선') return ascending ? '내선' : '외선'
   if (line === '1호선') return ascending ? '상선' : '하선'
@@ -145,19 +159,36 @@ export function predictSeat(
   if (!line) return { supported: false, reason: `${lineName}은 혼잡도 데이터가 없습니다 (1~8호선만 지원).` }
   if (!m.meta.days.includes(day)) return { supported: false, reason: `요일 구분은 ${m.meta.days.join('/')} 중 하나여야 합니다.` }
 
-  const idx = findStation(line.order, stationName)
-  if (idx < 0) return { supported: false, reason: `${stationName}역은 이 데이터셋에 없습니다.` }
-
-  const nextIdx = findStation(line.order, nextStationName)
-  if (nextIdx < 0 || nextIdx === idx)
-    return { supported: false, reason: `다음 역(${nextStationName})으로 방향을 정할 수 없습니다.` }
+  // 본선 → 지선 순으로 탑승역과 다음 역이 함께 있는 트랙을 고른다
+  const tracks: Track[] = [{ order: line.order }, ...(line.branches ?? [])]
+  let track: Track | null = null
+  let idx = -1
+  let nextIdx = -1
+  let stationFound = false
+  for (const t of tracks) {
+    const i = findStation(t.order, stationName)
+    if (i < 0) continue
+    stationFound = true
+    const n = findStation(t.order, nextStationName)
+    if (n < 0 || n === i) continue
+    track = t
+    idx = i
+    nextIdx = n
+    break
+  }
+  if (!stationFound) return { supported: false, reason: `${stationName}역은 이 데이터셋에 없습니다.` }
+  if (!track) return { supported: false, reason: `다음 역(${nextStationName})으로 방향을 정할 수 없습니다.` }
 
   const ascending = nextIdx > idx
-  const dir = directionLabel(lineName, ascending)
+  const dir = directionLabel(lineName, track.invertDirection ? !ascending : ascending)
 
-  const seriesOf = (station: string): number[] | undefined => line.data[station]?.[dir]?.[day]
+  const seriesOf = (entry: OrderEntry): number[] | undefined => line.data[entry.key ?? entry.name]?.[dir]?.[day]
 
-  const baseSeries = seriesOf(line.order[idx].name)
+  // "강동(마천)"처럼 승강장을 직접 지정해 부른 경우 그 시계열을 우선 사용
+  const explicit = norm(stationName)
+  const explicitSeries =
+    explicit !== track.order[idx].name ? line.data[explicit]?.[dir]?.[day] : undefined
+  const baseSeries = explicitSeries ?? seriesOf(track.order[idx])
   if (!baseSeries) return { supported: false, reason: `${stationName}역 ${dir} 데이터가 없습니다.` }
 
   const c0 = congestionAt(baseSeries, time)
@@ -170,9 +201,9 @@ export function predictSeat(
   let prevC = c0
   for (let k = 1; k <= Math.min(stops, 15); k++) {
     const i = idx + step * k
-    if (i < 0 || i >= line.order.length) break
-    const st = line.order[i].name
-    const series = seriesOf(st)
+    if (i < 0 || i >= track.order.length) break
+    const st = track.order[i].name
+    const series = seriesOf(track.order[i])
     if (!series) break
     const c = congestionAt(series, time)
 
@@ -198,7 +229,7 @@ export function predictSeat(
   return {
     supported: true,
     line: lineName,
-    station: line.order[idx].name,
+    station: track.order[idx].name,
     direction: dir,
     day,
     time,

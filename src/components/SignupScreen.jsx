@@ -57,7 +57,7 @@ function Step2Form({ form, set, agreed, setAgreed, error, loading, onSubmit, isV
           value={form.birth}
           onChange={e => set('birth', formatBirth(e.target.value))} />
         <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>
-          ※ 연령 확인 용도로만 사용되며 서버에 저장되지 않습니다.
+          ※ 연령 확인 용도로 수집·저장되며, 회원 탈퇴 시 삭제됩니다.
         </div>
       </div>
       <div>
