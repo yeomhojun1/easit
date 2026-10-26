@@ -21,6 +21,7 @@ import { User } from './users/user.entity'
         database: config.get('DB_NAME', 'easit'),
         entities: [User],
         synchronize: true,
+        ssl: config.get('DB_SSL') === 'true' ? { rejectUnauthorized: false } : false,
       }),
     }),
     AuthModule,
