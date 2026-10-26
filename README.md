@@ -1,5 +1,7 @@
 # Easit (이지잇) — 지하철 좌석 예측
 
+> 🔗 **Live Demo**: https://easit-web.vercel.app
+
 수도권 지하철에서 "이 열차에 타면 앉을 수 있을지, 몇 정거장 가면 자리가 날지"를 공공 혼잡도 통계로 계산해 보여 주는 모바일 웹 앱입니다.
 
 **바로 써 보기: https://yeomhojun1.github.io/easit/**
