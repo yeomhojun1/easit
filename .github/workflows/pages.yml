@@ -1,0 +1,46 @@
+# main 에 push 하면 프론트를 데모 모드(VITE_DEMO=true)로 빌드해 GitHub Pages 에 올린다.
+# 주소: https://yeomhojun1.github.io/easit/  (서버·DB 없이 브라우저 안에서만 동작)
+name: Deploy demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_DEMO: 'true'
+      # 어떤 경로로 새로고침해도 앱이 뜨도록 404.html 을 index.html 과 같게 둔다
+      - run: cp dist/index.html dist/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

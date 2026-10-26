@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { C, st } from '../constants'
-import { API_URL, fetchAuthProviders } from '../api'
+import { API_URL, IS_DEMO, apiFetch, fetchAuthProviders } from '../api'
+import { DEMO_ACCOUNT } from '../demo/account'
 
 // 백엔드에 등록된 소셜 로그인만 버튼으로 노출한다 (키가 없는 프로바이더는 숨김)
 const SOCIAL_BUTTONS = {
@@ -9,8 +10,15 @@ const SOCIAL_BUTTONS = {
   google: { text: 'Google로 시작하기', icon: 'G', iconStyle: { fontSize: 20 }, style: { background: '#fff', color: '#191919' } },
 }
 
-export default function OnboardingScreen({ navigate }) {
+export default function OnboardingScreen({ navigate, onLogin }) {
   const [providers, setProviders] = useState(null)
+
+  const startDemo = async () => {
+    const data = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify(DEMO_ACCOUNT) })
+    localStorage.setItem('token', data.accessToken)
+    onLogin?.(data.user)
+    navigate('main')
+  }
 
   useEffect(() => {
     let alive = true
@@ -31,6 +39,12 @@ export default function OnboardingScreen({ navigate }) {
       </div>
 
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {IS_DEMO && (
+          <button onClick={startDemo}
+            style={{ ...st.btn, background: C.gradPurple, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 8px 24px rgba(102,126,234,0.3)' }}>
+            <span>👆</span> 데모 계정으로 바로 시작
+          </button>
+        )}
         {socials.map(p => {
           const b = SOCIAL_BUTTONS[p.name]
           return (
@@ -46,7 +60,7 @@ export default function OnboardingScreen({ navigate }) {
         </button>
       </div>
 
-      {providers !== null && socials.length === 0 && (
+      {!IS_DEMO && providers !== null && socials.length === 0 && (
         <div style={{ marginTop: 14, color: C.muted, fontSize: 12, textAlign: 'center', lineHeight: 1.7 }}>
           소셜 로그인은 이 서버에 설정되어 있지 않습니다. 이메일로 시작해주세요.
         </div>

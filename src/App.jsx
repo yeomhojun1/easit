@@ -8,6 +8,8 @@ import ZoneScreen from './components/ZoneScreen'
 import RewardFlowScreen from './components/RewardFlowScreen'
 import RewardsScreen from './components/RewardsScreen'
 import BottomNav from './components/BottomNav'
+import DemoBanner from './demo/DemoBanner'
+import { IS_DEMO } from './api'
 
 const AUTH_SCREENS = ['onboarding', 'login', 'signup']
 
@@ -49,7 +51,8 @@ export default function App() {
 
   return (
     <div style={st.wrap}>
-      {screen === 'onboarding'   && <OnboardingScreen navigate={navigate} />}
+      {IS_DEMO && <DemoBanner />}
+      {screen === 'onboarding'   && <OnboardingScreen navigate={navigate} onLogin={handleLogin} />}
       {screen === 'login'        && <LoginScreen navigate={navigate} onLogin={handleLogin} />}
       {screen === 'signup'       && <SignupScreen navigate={navigate} onLogin={handleLogin} />}
       {screen === 'main'         && <MainScreen navigate={navigate} setSelectedCar={setSelectedCar} onSelectLine={(line) => { setSelectedLine(line); setSelectedDirection(null) }} onSelectStation={(station) => { setSelectedStation(station); setSelectedDirection(null) }} onSelectDirection={setSelectedDirection} user={user} onLogout={handleLogout} />}

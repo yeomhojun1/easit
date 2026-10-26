@@ -1,5 +1,8 @@
 export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4003/api'
 
+// VITE_DEMO=true 로 빌드하면 서버 없이 브라우저 안의 가짜 API(src/demo)로 동작한다
+export const IS_DEMO = import.meta.env.VITE_DEMO === 'true'
+
 // network=true 면 서버에 닿지 못한 것(미기동·CORS·DNS). 화면 문구를 구분하는 데 쓴다.
 export class ApiError extends Error {
   constructor(message, { network = false, status = 0 } = {}) {
@@ -11,6 +14,15 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch(path, options = {}) {
+  if (IS_DEMO) {
+    const { demoFetch } = await import('./demo/demoApi')
+    const { status, data } = await demoFetch(path, options)
+    if (status >= 400) {
+      throw new ApiError(Array.isArray(data?.message) ? data.message.join(', ') : data?.message, { status })
+    }
+    return data
+  }
+
   const token = localStorage.getItem('token')
   let res
   try {
