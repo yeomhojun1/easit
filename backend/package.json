@@ -6,7 +6,10 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
     "pretest": "nest build",
-    "test": "node --test test/"
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Get, UseGuards, Req, Res } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { RegisterDto } from './dto/register.dto'
+import { LoginDto } from './dto/login.dto'
 import { OAuthGuard } from './oauth.guard'
 import { enabledProviders, frontendUrl, OAUTH_PROVIDERS, isProviderConfigured } from './auth.config'
 
@@ -25,7 +26,7 @@ export class AuthController {
 
   // ── 이메일 로그인
   @Post('login')
-  login(@Body() body: { email: string; password: string }) {
+  login(@Body() body: LoginDto) {
     return this.auth.login(body.email, body.password)
   }
 

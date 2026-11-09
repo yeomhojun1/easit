@@ -35,11 +35,15 @@ export function enabledProviders(): OAuthProviderInfo[] {
 }
 
 // 키가 없으면 개발용 기본값으로 대체 (없으면 passport-jwt 가 부팅 중 예외를 던진다)
+// 단, 운영(NODE_ENV=production)에서는 공개된 기본값으로 토큰이 위조될 수 있으므로 기동을 막는다.
 export const DEV_JWT_SECRET = 'easit-dev-only-secret-change-me'
 
 export function jwtSecret(): string {
   const v = process.env.JWT_SECRET
   if (v && v.trim()) return v
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[auth] 운영 환경(NODE_ENV=production)에서는 JWT_SECRET 환경변수가 필수입니다. / JWT_SECRET must be set in production.')
+  }
   console.warn('[auth] JWT_SECRET 미설정 — 개발용 기본 시크릿을 사용합니다. 운영에서는 반드시 설정하세요.')
   return DEV_JWT_SECRET
 }

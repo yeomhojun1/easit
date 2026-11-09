@@ -1,5 +1,7 @@
 # Easit (이지잇) — 지하철 좌석 예측
 
+[![CI](https://github.com/yeomhojun1/easit/actions/workflows/ci.yml/badge.svg)](https://github.com/yeomhojun1/easit/actions/workflows/ci.yml)
+
 > 🔗 **Live Demo**: https://easit-web.vercel.app
 
 수도권 지하철에서 "이 열차에 타면 앉을 수 있을지, 몇 정거장 가면 자리가 날지"를 공공 혼잡도 통계로 계산해 보여 주는 모바일 웹 앱입니다.
@@ -110,7 +112,7 @@ https://yeomhojun1.github.io/easit/ 에 접속하면 됩니다. 앱 설치나 �
 
 ### 데모 모드 (GitHub Pages)
 
-`VITE_DEMO=true`로 빌드하면 백엔드 대신 브라우저 안의 가짜 API(`src/demo/`)가 응답합니다. 착석 예측은 `backend/data/congestion-model.json`을 그대로 불러와 `backend/src/subway/seat-model.ts`와 같은 계산(`src/demo/seatModel.js`)을 합니다. 백엔드 모델을 고치면 이 파일도 같이 고쳐야 합니다. 평소 빌드(`npm run build`)에는 데모 코드가 포함되지 않습니다.
+`VITE_DEMO=true`로 빌드하면 백엔드 대신 브라우저 안의 가짜 API(`src/demo/`)가 응답합니다. 착석 예측은 `backend/data/congestion-model.json`을 그대로 불러와 `backend/src/subway/seat-model.ts`와 같은 계산(`src/demo/seatModel.js`)을 합니다. 백엔드 모델을 고치면 이 파일도 같이 고쳐야 합니다 — 두 모델의 결과가 같은지는 `backend/test/seat-model-parity.test.js`가 `npm test`마다 확인합니다(아래 "테스트" 참고). 평소 빌드(`npm run build`)에는 데모 코드가 포함되지 않습니다.
 
 ```bash
 VITE_DEMO=true npm run build   # base 가 /easit/ 로 바뀜
@@ -148,12 +150,23 @@ VITE_DEMO=true npm run preview # http://localhost:4173/easit/
 # 모델 재생성 (원본 CSV → JSON)
 cd backend && node scripts/build-congestion-model.mjs
 
-# 예측 API 스모크 테스트 (DB 불필요)
+# 예측 API 스모크 테스트 (DB 불필요, 기본 포트 3999 — 바꾸려면 SMOKE_PORT=3701 처럼 지정)
 npm run build && node scripts/smoke-prediction.js
-
-# 예측 모델 단위 테스트 (DB 불필요)
-npm test
 ```
+
+#### 테스트 (DB·네트워크 불필요)
+
+```bash
+cd backend
+npm test                       # nest build 후 node --test 로 test/*.test.js 실행
+PARITY_FULL=1 npm test         # 백엔드↔데모 모델 비교를 표본(92,160건) 대신 전수(184,320건)로
+```
+
+- `test/seat-model.test.js` — 예측 모델 회귀 테스트
+- `test/hardening.test.js` — 입력 검증(DTO 에 없는 필드 거절), 로그인 DTO, 운영 환경 `JWT_SECRET` 필수, 외부 API 오류 처리, 서울 시간대 기본 시각
+- `test/seat-model-parity.test.js` — 백엔드 모델(`seat-model.ts`)과 데모 사본(`src/demo/seatModel.js`)의 결과가 모든 인접 역 쌍 × 요일 유형 × 15분 간격 시각에서 같은지 비교
+
+`main` 브랜치 push·PR 마다 `.github/workflows/ci.yml`이 Node 20에서 백엔드 빌드·테스트와 프론트 빌드를 돌립니다.
 
 ```
 GET /api/subway/seat-prediction?line=2호선&station=강남&next=역삼&day=평일&time=08:30
@@ -180,6 +193,12 @@ easit/
 ```
 
 ### 실행 방법 (Docker 불필요)
+
+필요한 것: **Node.js 20 이상**(`engines: >=20`, CI 는 Node 20), **PostgreSQL**.
+
+> 백엔드는 PostgreSQL 연결이 되어야 기동합니다. DB 가 없으면 TypeORM 이 몇 번 재시도한 뒤 프로세스가 종료되므로,
+> DB 가 필요 없는 착석 예측 API(`/api/subway/seat-prediction`)도 뜨지 않습니다.
+> DB 없이 확인하려면 예측 API 스모크 테스트(`node scripts/smoke-prediction.js`)나 프론트 데모 모드(`VITE_DEMO=true`)를 쓰세요.
 
 #### 1. PostgreSQL 16
 
@@ -229,7 +248,7 @@ DB_USER=easit
 DB_PASS=easit1234
 DB_NAME=easit
 
-JWT_SECRET=32자_이상_랜덤_문자열   # 없으면 개발용 기본값으로 동작
+JWT_SECRET=32자_이상_랜덤_문자열   # 없으면 개발용 기본값으로 동작, NODE_ENV=production 이면 없을 때 기동 실패
 
 # 선택 — 없으면 해당 소셜 버튼이 숨겨집니다
 # KAKAO_REST_API_KEY=카카오_REST_API_키

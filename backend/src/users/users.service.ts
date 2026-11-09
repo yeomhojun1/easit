@@ -22,7 +22,16 @@ export class UsersService {
 
   async createEmailUser(dto: { name: string; email: string; password: string; phone?: string; birthDate?: string; gender?: string }) {
     const hashed = await bcrypt.hash(dto.password, 10)
-    const user = this.repo.create({ ...dto, password: hashed, provider: 'email' })
+    // dto 를 펼치지 않고 필드를 명시한다 — points·isActive·id 같은 서버 관리 필드가 섞여 들어오지 않게
+    const user = this.repo.create({
+      name: dto.name,
+      email: dto.email,
+      password: hashed,
+      phone: dto.phone,
+      birthDate: dto.birthDate,
+      gender: dto.gender,
+      provider: 'email',
+    })
     try {
       return await this.repo.save(user)
     } catch (err: any) {
